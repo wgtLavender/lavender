@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+		<title>layui在线调试</title>
+		<link rel="stylesheet" href="css/modules/layer/default/layer.css" media="all">
+		<link rel="stylesheet" href="css/layui.css" />
+		<link rel="stylesheet" href="css/modules/laydate/default/laydate.css" />
+		<link rel="stylesheet" href="css/modules/code.css" />
+		<script type="text/javascript" src="lay/modules/laydate.js"></script>
+		<script type="text/javascript" src="js/DatePicker.js"></script>
+		<script type="text/javascript" src="js/jquery-3.1.1.js"></script>
+		<style>
+			body {
+				margin: 10px;
+			}
+			.demo-carousel {
+				height: 200px;
+				line-height: 200px;
+				text-align: center;
+			}
+		</style>
+	</head>
+
+	<body>
+		<script type="text/html" id="type">
+			<input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text='下架|上架' {{d.type==1?'checked':''}} lay-filter="goodtype">
+		</script>
+		<table class="layui-hide" id="demo" lay-filter="test"></table>
+		<!--<input type="text" class="layui-input" id="test2" />-->
+		<span id="testView"></span>
+		<div id="test2"></div>
+		<script type="text/html" id="barDemo">
+			<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+			<a class="layui-btn layui-btn-xs" lay-event="info" href="goodpicture.html?id={{d.id}}">商品详情</a>
+				<!--<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="putaway" id="putaway">上架</a>
+			<a class="layui-btn layui-btn-xs layui-btn-xs" lay-event="outputaway" id="outputaway">下架</a>-->
+		</script>
+		<script src="js/layui.all.js"></script>
+
+		<script type="text/javascript" src="lay/modules/laydate.js"></script>
+		<script>
+			function getUrl(url) {
+				return 'http://localhost:8080/api/v1/' + url;
+			}
+
+			var $ = layui.jquery
+			layui.use(['laydate', 'laypage', 'layer', 'form', 'table', 'carousel', 'upload', 'element', 'slider'], function() {
+				var
+					layer = layui.layer //弹层
+					,
+					table = layui.table //表格
+					,
+					upload = layui.upload,
+					laytpl = layui.laytpl,
+					form = layui.form
+				laydate.render({
+					elem: '#test2' //指定元素
+				});
+				//执行一个 table 实例
+				table.render({
+					elem: '#demo',
+					height: 420,
+					url: getUrl('showGoods') //数据接口
+						,
+					title: '商品表',
+					page: true //开启分页
+						,
+					id: 'idemo',
+					toolbar: 'default' //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
+						,
+					totalRow: true //开启合计行
+						,
+					done: function() {
+
+					},
+					request: {
+						pageName: 'pageNum' //页码的参数名称，默认：page
+							,
+						limitName: 'pageSize' //每页数据量的参数名，默认：limit
+					},
+					response: {
+						statusName: 'code' //规定数据状态的字段名称，默认：code
+							,
+						statusCode: 1000 //规定成功的状态码，默认：0
+							,
+						msgName: 'msg' //规定状态信息的字段名称，默认：msg
+							,
+						countName: 'count' //规定数据总数的字段名称，默认：count
+							,
+						dataName: 'data' //规定数据列表的字段名称，默认：data
+					},
+					cols: [
+						[ //表头
+							{
+								type: 'checkbox',
+								fixed: 'left'
+							}, {
+								field: 'id',
+								title: '商品编号',
+								//								width: 80,
+								sort: true,
+								fixed: 'left',
+								totalRowText: '合计：'
+							}, {
+								field: 'goodname',
+								title: '商品名字',
+								//								width: 80,
+								edit: 'text',
+								sort: true,
+								fixed: 'left',
+								totalRowText: '合计：',
+								templet: function(d) {
+									return d.goodname;
+								}
+							},
+
+							{
+								field: 'price',
+								title: '商品价格',
+								//								width: 80
+								edit: 'text',
+								templet: function(d) {
+									return d.price;
+								}
+							},
+							{
+								field: 'type',
+								title: '商品状态',
+								templet: '#type'
+							},
+
+							{
+								fixed: 'right',
+
+								title: "操作",
+								align: 'center',
+								toolbar: '#barDemo'
+							},
+
+						]
+					]
+				});
+
+				//监听头工具栏事件
+				table.on('toolbar(test)', function(obj) {
+					var checkStatus = table.checkStatus(obj.config.id),
+						data = checkStatus.data; //获取选中的数据
+					//						alert(JSON.stringify(obj.data.birth))
+					var event = obj.event;
+//					alert(event)
+					switch(event) {
+						case 'add':
+							location.href = 'addGood.html'
+							break;
+						case 'delete':
+							//								alert(JSON.stringify(data))
+							var arr = new Array();
+							for(var i = 0; i < data.length; i++) {
+								var id = data[i].id
+								arr[i] = id;
+							}
+							layer.confirm('确认批量删除', function(index) {
+							    alert(arr)
+								$.ajax({
+									type: "post",
+									url: getUrl('goodsDele'),
+									async: true,
+									data: {
+
+										id: arr,
+										_method:'delete'
+
+									},
+									traditional: true,
+									success: function(data) {
+										if(data == true) {
+											layer.msg("删除成功");
+											table.reload('idemo', {});
+										} else {
+											layer.msg("删除失败");
+											table.reload('idemo', {});
+										}
+
+									}
+								});
+								layer.close(index)
+							})
+
+					};
+				});
+
+				//监听行工具事件
+				table.on('tool(test)', function(obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+					var event = obj.event;
+					var id = obj.data.id;
+										alert(obj.event)
+					//					alert(id)
+					if(event == 'del') {
+						layer.confirm('确定删除', function(index) {
+							$.ajax({
+								type: "post",
+								url: getUrl('deleteById'),
+								async: true,
+								data: {
+									id: id,
+									_method:'delete'
+
+								},
+								success: function(data) {
+									if(data == true) {
+										layer.msg("删除成功");
+										obj.del();
+									} else {
+										layer.msg("删除失败");
+										table.reload('idemo', {});
+									}
+								}
+							});
+						})
+					} else if(event == 'putaway') {
+						layer.confirm('确定上架', function(index) {
+							alert("111")
+							$.ajax({
+								type: "post",
+								url: getUrl("putaway"),
+								async: true,
+								data: {
+									type: 1,
+									id: id
+								},
+								success: function(data) {
+									alert(data)
+									if(data == true) {
+										layer.msg("上架成功");
+										//										document.getElementById("putaway").hidden
+										table.reload('idemo', {});
+									} else {
+										layer.msg("上架失败");
+										table.reload('idemo', {});
+									}
+								}
+							});
+							layer.close(index)
+						})
+					} else if(event == 'outputaway') {
+						layer.confirm('确定下架', function(index) {
+							$.ajax({
+								type: "post",
+								url: getUrl("putaway"),
+								async: true,
+								data: {
+									type: 0,
+									id: id
+								},
+								success: function(data) {
+									if(data == true) {
+										layer.msg("下架成功");
+										//										document.getElementById("putaway").hidden
+										table.reload('idemo', {});
+									} else {
+										layer.msg("下架失败");
+										table.reload('idemo', {});
+									}
+								}
+							});
+							layer.close(index)
+						})
+					} else if(event == 'info') {
+						
+						
+//						alert("111")
+//						$.ajax({
+//							type:"post",
+//							url:getUrl('getInfo'),
+//							async:true,
+//							data:{
+//								id:id
+//							},
+//							success:function(data) {
+//								var info = JSON.stringify(data.data)
+//								alert(data)
+//								alert(JSON.stringify(data.data))
+//								alert(data.code)
+//							}
+//						});
+//						
+												
+					} 
+
+				});
+				table.on('edit(test)', function(obj) {
+					alert(obj.field)
+					var da = JSON.stringify(obj.data)
+
+					var newName = obj.value
+					alert(newName)
+					var id = obj.data.id
+					var filed = obj.field
+
+					layer.confirm('确认修改', function(index) {
+						alert(obj.field)
+						$.ajax({
+							type: "post",
+							url: getUrl("updatGoods"),
+							async: true,
+							data: {
+								_method: 'PATCH',
+								id: id,
+								filed: filed,
+								newName: newName
+								//									student:da
+							},
+							success: function(data) {
+								if(data == true) {
+									layer.msg("修改成功~~~")
+									//										table.reload()
+									table.reload('idemo', {});
+								} else {
+									layer.msg('修改失败!!!')
+								}
+							}
+						});
+						layer.close(index)
+					})
+
+				});
+				form.on('switch(goodtype)', function(data) {
+					var a = data.elem.checked
+					var id = data.elem.value
+					if(a == false) {
+						layer.confirm('确定下架', function(index) {
+							$.ajax({
+								type: "post",
+								url: getUrl("putaway"),
+								async: true,
+								data: {
+									type: 0,
+									id: id
+								},
+								success: function(data) {
+									if(data == true) {
+										layer.msg("下架成功");
+									} else {
+										layer.msg("下架失败");
+									}
+								}
+							});
+							layer.close(index)
+						})
+					} else {
+						layer.confirm('确定上架', function(index) {
+							$.ajax({
+								type: "post",
+								url: getUrl("putaway"),
+								async: true,
+								data: {
+									type: 1,
+									id: id
+								},
+								success: function(data) {
+									if(data == true) {
+										layer.msg("上架成功");
+									} else {
+										layer.msg("上架失败");
+									}
+								}
+							});
+							layer.close(index)
+						})
+						layer.close(index)
+					}
+
+//					console.log(data.elem); //得到checkbox原始DOM对象
+//					console.log(data.elem.checked); //开关是否开启，true或者false
+//					console.log(data.value); //开关value值，也可以通过data.elem.value得到
+//					console.log(data.othis); //得到美化后的DOM对象
+				});
+			});
+		</script>
+	</body>
+
+</html>

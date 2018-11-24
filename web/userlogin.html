@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>登录</title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="js/jquery-3.1.1.js"></script>
+<link rel="stylesheet" href="css/verify.css" />
+<script type="text/javascript" src="js/verify.min.js"></script>
+<script type="text/javascript">
+ 				
+$(function() {
+	if (window != window.top) {
+		window.top.location.href = "userlogin.html"
+	}
+
+	$('#mpanel1').slideVerify({
+		type : 1, //类型
+		vOffset : 5, //误差量，根据需求自行调整
+		barSize : {
+			width : '335px',
+			height : '40px',
+		},
+		ready : function() {
+		},
+		success : function() {
+			$("form").attr("onsubmit","return true")
+		},
+		error : function() {
+			$("form").attr("onsubmit","return false")
+		}
+
+	});
+})
+
+		
+</script>
+</head>
+<body>
+	<div class="bg"></div>
+	<form action="loginUser" method="post" onsubmit="return false">
+		<div class="container">
+			<div class="line bouncein">
+				<div class="xs6 xm4 xs3-move xm4-move">
+					<div style="height: 150px;"></div>
+					<div class="media media-y margin-big-bottom"></div>
+
+					<div class="panel loginbox">
+						<div class="text-center margin-big padding-big-top">
+							<h1>后台管理中心</h1>
+						</div>
+						<div class="panel-body"
+							style="padding: 30px; padding-bottom: 10px; padding-top: 10px;">
+							<div class="form-group">
+								<div class="field field-icon-right">
+									<input type="text" class="input input-big" name="username"
+										placeholder="登录账号" data-validate="required:请填写账号" /> <span
+										class="icon icon-user margin-small"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="field field-icon-right">
+									<input type="password" class="input input-big"
+										name="password" placeholder="登录密码"
+										data-validate="required:请填写密码" /> <span
+										class="icon icon-key margin-small"></span>
+								</div>
+							</div>
+							<div id="mpanel1"></div>
+
+							<div style="padding: 30px;">
+								<input type="submit"
+									class="button button-block bg-main text-big input-big"
+									value="登录">
+							</div>
+							<div style="padding: 30px; align: center">
+								<a>没有账号？点这里</a><a href="register.html">注册</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>
+</html>

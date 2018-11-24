@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="css/layui.css" />
+		<script type="text/javascript" src="js/layui.all.js"></script>
+	<script type="text/javascript" src="js/jquery-3.1.1.js" ></script>
+	<script>
+		
+	</script>
+	</head>
+	<body>
+		<!--<img  width="80px" height="80px" src="http://localhost:8080/upload/79a4afb137h.jpg" />tu-->
+		<ul id="demo">
+			<!--<li><img lay-src="http://localhost:8080/upload/79a4afb137h.jpg" width="80px" height="80px"></li>-->
+			<!--<li><img width="80px" height="80px" src="http://localhost:8080/upload/79a4afb137h.jpg" /></li>-->
+		</ul>
+		<script type="text/javascript">
+			function getUrl(url) {
+				return 'http://localhost:8080/lavender/api/v1/' + url;
+			}
+			var e =  window.location.search;
+	 var f = e.substr(4);
+//		alert("1111")
+//		alert(e)
+//		alert(f)
+			layui.use('flow', function() {
+				var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+				var flow = layui.flow;
+//				flow.load(options);
+				flow.load({
+					elem: '#demo' //指定列表容器
+						,
+					done: function(page, next) { //到达临界点（默认滚动触发），触发下一页
+						var lis = [];
+						//以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+						$.get(getUrl('getInfo') + "?id=" + f, function(res) {
+							//假设你的列表返回在data集合中
+//							alert(res.code)
+							layui.each(res.data, function(index, item) {
+//								alert(res.data)
+//								alert(item.imgurl)
+								
+								lis.push('<li><img width="300px" height="300px" src="http://localhost:8080/upload/'+  item.imgurl +'"></li>');
+							});
+
+							//执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+							//pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+							next(lis.join(''), page < res.pages);
+						});
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>
